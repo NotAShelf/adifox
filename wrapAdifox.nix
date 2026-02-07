@@ -11,14 +11,14 @@
     applicationName = {
       type = types.string;
       defaultFunc = { options, inputs }:
-        let lib = inputs.nixpkgs.lib;
+        let inherit (inputs.nixpkgs) lib;
         in options.package.binaryName or (lib.getName options.package);
     };
 
     version = {
       type = types.string;
       defaultFunc = { options, inputs }:
-        let lib = inputs.nixpkgs.lib;
+        let inherit (inputs.nixpkgs) lib;
         in lib.getVersion options.package;
     };
 
@@ -60,7 +60,7 @@
     hasMozSystemDirPatch = {
       type = types.bool;
       defaultFunc = { options, inputs }:
-        let lib = inputs.nixpkgs.lib;
+        let inherit (inputs.nixpkgs) lib;
         in lib.hasPrefix "firefox" options.applicationName && !lib.hasSuffix "-bin" options.applicationName;
     };
 
@@ -97,11 +97,9 @@
 
   impl = { options, inputs }:
     let
-      pkgs = inputs.nixpkgs.pkgs;
-      lib = inputs.nixpkgs.lib;
-      stdenv = pkgs.stdenv;
-
-      isDarwin = stdenv.hostPlatform.isDarwin;
+      inherit (inputs.nixpkgs) lib pkgs;
+      inherit (pkgs) stdenv;
+      inherit (stdenv.hostPlatform) isDarwin;
 
       browser =
         if isDarwin
