@@ -7,8 +7,8 @@
     applicationName = {
       type = types.string;
       defaultFunc = { options, inputs }:
-        let pkgs = inputs.nixpkgs.pkgs;
-        in options.package.binaryName or (pkgs.lib.getName options.package);
+        let lib = inputs.nixpkgs.lib;
+        in options.package.binaryName or (lib.getName options.package);
     };
 
     pname = {
@@ -19,8 +19,8 @@
     version = {
       type = types.string;
       defaultFunc = { options, inputs }:
-        let pkgs = inputs.nixpkgs.pkgs;
-        in pkgs.lib.getVersion options.package;
+        let lib = inputs.nixpkgs.lib;
+        in lib.getVersion options.package;
     };
 
     nameSuffix = {
@@ -61,8 +61,8 @@
     hasMozSystemDirPatch = {
       type = types.bool;
       defaultFunc = { options, inputs }:
-        let pkgs = inputs.nixpkgs.pkgs;
-        in pkgs.lib.hasPrefix "firefox" options.pname && !pkgs.lib.hasSuffix "-bin" options.pname;
+        let lib = inputs.nixpkgs.lib;
+        in lib.hasPrefix "firefox" options.pname && !lib.hasSuffix "-bin" options.pname;
     };
 
     extraPrefs = {
@@ -103,7 +103,7 @@
   impl = { options, inputs }:
     let
       pkgs = inputs.nixpkgs.pkgs;
-      lib = pkgs.lib;
+      lib = inputs.nixpkgs.lib;
       stdenv = pkgs.stdenv;
 
       isDarwin = stdenv.hostPlatform.isDarwin;

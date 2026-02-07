@@ -12,6 +12,10 @@ let
       pkgs = {
         type = adios.types.attrs;
       };
+      lib = {
+        type = adios.types.attrs;
+        defaultFunc = { options }: options.pkgs.lib;
+      };
     };
   };
 

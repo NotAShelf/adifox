@@ -58,6 +58,10 @@ let
       pkgs = {
         type = adios.types.attrs;
       };
+      lib = {
+        type = adios.types.attrs;
+        defaultFunc = { options }: options.pkgs.lib;
+      };
     };
   };
 
@@ -100,7 +104,13 @@ like this:
           modules = {
             nixpkgs = adios: {
               name = "nixpkgs";
-              options.pkgs.type = adios.types.attrs;
+              options = {
+                pkgs.type = adios.types.attrs;
+                lib = {
+                  type = adios.types.attrs;
+                  defaultFunc = { options }: options.pkgs.lib;
+                };
+              };
             };
             wrapAdifox = import ./wrapAdifox.nix adios;
           };
