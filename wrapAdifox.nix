@@ -1,4 +1,8 @@
 {types, ...}: {
+  inputs = {
+    nixpkgs.path = "/nixpkgs";
+  };
+
   options = {
     package = {
       type = types.derivation;
@@ -89,10 +93,6 @@
       type = types.attrs;
       default = {};
     };
-  };
-
-  inputs = {
-    nixpkgs.path = "/nixpkgs";
   };
 
   impl = { options, inputs }:
