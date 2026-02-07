@@ -31,5 +31,5 @@ let
 in
   # Call the wrapper with Firefox
   tree.modules.wrapAdifox {
-    browser = pkgs.firefox-unwrapped;
+    package = pkgs.firefox-unwrapped;
   }

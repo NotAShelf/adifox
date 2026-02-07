@@ -1,6 +1,6 @@
 {types, ...}: {
   options = {
-    browser = {
+    package = {
       type = types.derivation;
     };
 
@@ -8,7 +8,7 @@
       type = types.string;
       defaultFunc = { options, inputs }:
         let pkgs = inputs.nixpkgs.pkgs;
-        in options.browser.binaryName or (pkgs.lib.getName options.browser);
+        in options.package.binaryName or (pkgs.lib.getName options.package);
     };
 
     pname = {
@@ -20,7 +20,7 @@
       type = types.string;
       defaultFunc = { options, inputs }:
         let pkgs = inputs.nixpkgs.pkgs;
-        in pkgs.lib.getVersion options.browser;
+        in pkgs.lib.getVersion options.package;
     };
 
     nameSuffix = {
@@ -87,7 +87,7 @@
 
     libName = {
       type = types.string;
-      defaultFunc = {options}: options.browser.libName or options.applicationName;
+      defaultFunc = {options}: options.package.libName or options.applicationName;
     };
 
     cfg = {
@@ -110,12 +110,12 @@
 
       browser =
         if isDarwin
-        then options.browser.overrideAttrs (
+        then options.package.overrideAttrs (
           oldAttrs: lib.optionalAttrs (oldAttrs.dontFixup or false) {
             dontFixup = false;
           }
         )
-        else options.browser;
+        else options.package;
 
       ffmpegSupport = browser.ffmpegSupport or false;
       gssSupport = browser.gssSupport or false;
