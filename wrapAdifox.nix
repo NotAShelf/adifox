@@ -185,7 +185,7 @@
                 blocked_install_message = "You can't have manual extension mixed with nix extensions";
                 installation_mode = "blocked";
               };
-            } // lib.foldr (
+            } // builtins.foldl' (
               e: ret: ret // {
                 "${e.extid}" = {
                   installation_mode = "allowed";
@@ -194,7 +194,7 @@
             ) {} extensions;
 
             Extensions = {
-              Install = lib.foldr (e: ret: ret ++ ["${e.outPath}/${e.extid}.xpi"]) [] extensions;
+              Install = builtins.foldl' (e: ret: ret ++ ["${e.outPath}/${e.extid}.xpi"]) [] extensions;
             };
           }
           // lib.optionalAttrs smartcardSupport {
@@ -295,7 +295,7 @@
           "--run" "mkdir -p \${MOZ_HOME:-~/.mozilla}/native-messaging-hosts"
         ]
         ++ lib.optionals (!options.hasMozSystemDirPatch) (
-          lib.concatMap (ext: [
+          builtins.concatMap (ext: [
             "--run" "ln -sfLt \${MOZ_HOME:-~/.mozilla}/native-messaging-hosts ${ext}/lib/mozilla/native-messaging-hosts/*"
           ]) allNativeMessagingHosts
         );
