@@ -85,7 +85,7 @@
       defaultFunc = {options}: options.package.libName or options.applicationName;
     };
 
-    cfg = {
+    settings = {
       type = types.attrs;
       default = {};
     };
@@ -118,7 +118,7 @@
       pipewireSupport = browser.pipewireSupport or false;
       sndioSupport = browser.sndioSupport or false;
       jackSupport = browser.jackSupport or false;
-      smartcardSupport = options.cfg.smartcardSupport or false;
+      smartcardSupport = options.settings.smartcardSupport or false;
 
       allNativeMessagingHosts = map lib.getBin (lib.unique options.nativeMessagingHosts);
 
@@ -133,13 +133,13 @@
           pkgs.pciutils
           pkgs.vulkan-loader
         ]
-        ++ lib.optional (options.cfg.speechSynthesisSupport or true) pkgs.speechd-minimal
+        ++ lib.optional (options.settings.speechSynthesisSupport or true) pkgs.speechd-minimal
       )
       ++ lib.optional pipewireSupport pkgs.pipewire
       ++ lib.optional ffmpegSupport pkgs.ffmpeg_7
       ++ lib.optional gssSupport pkgs.libkrb5
       ++ lib.optional options.useGlvnd pkgs.libglvnd
-      ++ lib.optionals (options.cfg.enableQuakeLive or false) [
+      ++ lib.optionals (options.settings.enableQuakeLive or false) [
         stdenv.cc
         pkgs.libx11
         pkgs.libxxf86dga

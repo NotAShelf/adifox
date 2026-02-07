@@ -189,7 +189,7 @@ nix-build tests/advanced.nix
   defaults
 - Library paths computed from `inputs.nixpkgs.pkgs` for proper lib access
 - Browser feature flags extracted from `options.package.*` attributes
-- External config support via `cfg` option for NixOS module system
+- External config support via `settings` option for NixOS module system
   compatibility. This might be removed or renamed at a later date depending on
   my needs and mood.
 - Complete bash `buildCommand` ported from `wrapFirefox` with all platform
