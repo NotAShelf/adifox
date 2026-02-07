@@ -44,8 +44,8 @@
     };
 
     nixExtensions = {
-      type = types.option (types.listOf types.attrs);
-      default = null;
+      type = types.listOf types.attrs;
+      default = [];
     };
 
     useGlvnd = {
@@ -161,7 +161,7 @@
 
       launcherName = "${options.applicationName}${lib.optionalString (!isDarwin) options.nameSuffix}";
 
-      usesNixExtensions = options.nixExtensions != null;
+      usesNixExtensions = options.nixExtensions != [];
 
       nameArray = map (a: a.name) (lib.optionals usesNixExtensions options.nixExtensions);
 
