@@ -267,7 +267,7 @@
         inherit desktopItem;
 
         nativeBuildInputs = [
-          pkgs.makeWrapper
+          pkgs.makeBinaryWrapper
           pkgs.lndir
           pkgs.jq
         ];
@@ -308,7 +308,9 @@
           sourceBinary = "${browser}/${executablePath}";
           libDir = if isDarwin then "${appPath}/Contents/Resources" else "lib/${options.libName}";
           prefsDir = if isDarwin then "${libDir}/browser/defaults/preferences" else "${libDir}/defaults/pref";
-        in ''
+        in
+        # bash
+        ''
           if [ ! -x "${sourceBinary}" ]; then
             echo "cannot find executable file \`${sourceBinary}'"
             exit 1
