@@ -11,11 +11,6 @@
         in options.package.binaryName or (lib.getName options.package);
     };
 
-    pname = {
-      type = types.string;
-      defaultFunc = {options}: options.applicationName;
-    };
-
     version = {
       type = types.string;
       defaultFunc = { options, inputs }:
@@ -62,7 +57,7 @@
       type = types.bool;
       defaultFunc = { options, inputs }:
         let lib = inputs.nixpkgs.lib;
-        in lib.hasPrefix "firefox" options.pname && !lib.hasSuffix "-bin" options.pname;
+        in lib.hasPrefix "firefox" options.applicationName && !lib.hasSuffix "-bin" options.applicationName;
     };
 
     extraPrefs = {
@@ -268,7 +263,7 @@
     in
       stdenv.mkDerivation (finalAttrs: {
         __structuredAttrs = true;
-        pname = options.pname;
+        pname = options.applicationName;
         version = options.version;
 
         inherit desktopItem;
