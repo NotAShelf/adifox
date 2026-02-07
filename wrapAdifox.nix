@@ -1,26 +1,25 @@
 {types, ...}: {
+  inputs = {
+    nixpkgs.path = "/nixpkgs";
+  };
+
   options = {
-    browser = {
+    package = {
       type = types.derivation;
     };
 
     applicationName = {
       type = types.string;
       defaultFunc = { options, inputs }:
-        let pkgs = inputs.nixpkgs.pkgs;
-        in options.browser.binaryName or (pkgs.lib.getName options.browser);
-    };
-
-    pname = {
-      type = types.string;
-      defaultFunc = {options}: options.applicationName;
+        let inherit (inputs.nixpkgs) lib;
+        in options.package.binaryName or (lib.getName options.package);
     };
 
     version = {
       type = types.string;
       defaultFunc = { options, inputs }:
-        let pkgs = inputs.nixpkgs.pkgs;
-        in pkgs.lib.getVersion options.browser;
+        let inherit (inputs.nixpkgs) lib;
+        in lib.getVersion options.package;
     };
 
     nameSuffix = {
@@ -49,8 +48,8 @@
     };
 
     nixExtensions = {
-      type = types.option (types.listOf types.attrs);
-      default = null;
+      type = types.listOf types.attrs;
+      default = [];
     };
 
     useGlvnd = {
@@ -61,8 +60,8 @@
     hasMozSystemDirPatch = {
       type = types.bool;
       defaultFunc = { options, inputs }:
-        let pkgs = inputs.nixpkgs.pkgs;
-        in pkgs.lib.hasPrefix "firefox" options.pname && !pkgs.lib.hasSuffix "-bin" options.pname;
+        let inherit (inputs.nixpkgs) lib;
+        in lib.hasPrefix "firefox" options.applicationName && !lib.hasSuffix "-bin" options.applicationName;
     };
 
     extraPrefs = {
@@ -87,35 +86,29 @@
 
     libName = {
       type = types.string;
-      defaultFunc = {options}: options.browser.libName or options.applicationName;
+      defaultFunc = {options}: options.package.libName or options.applicationName;
     };
 
-    cfg = {
+    settings = {
       type = types.attrs;
       default = {};
     };
   };
 
-  inputs = {
-    nixpkgs.path = "/nixpkgs";
-  };
-
   impl = { options, inputs }:
     let
-      pkgs = inputs.nixpkgs.pkgs;
-      lib = pkgs.lib;
-      stdenv = pkgs.stdenv;
-
-      isDarwin = stdenv.hostPlatform.isDarwin;
+      inherit (inputs.nixpkgs) lib pkgs;
+      inherit (pkgs) stdenv;
+      inherit (stdenv.hostPlatform) isDarwin;
 
       browser =
         if isDarwin
-        then options.browser.overrideAttrs (
+        then options.package.overrideAttrs (
           oldAttrs: lib.optionalAttrs (oldAttrs.dontFixup or false) {
             dontFixup = false;
           }
         )
-        else options.browser;
+        else options.package;
 
       ffmpegSupport = browser.ffmpegSupport or false;
       gssSupport = browser.gssSupport or false;
@@ -123,7 +116,7 @@
       pipewireSupport = browser.pipewireSupport or false;
       sndioSupport = browser.sndioSupport or false;
       jackSupport = browser.jackSupport or false;
-      smartcardSupport = options.cfg.smartcardSupport or false;
+      smartcardSupport = options.settings.smartcardSupport or false;
 
       allNativeMessagingHosts = map lib.getBin (lib.unique options.nativeMessagingHosts);
 
@@ -138,13 +131,13 @@
           pkgs.pciutils
           pkgs.vulkan-loader
         ]
-        ++ lib.optional (options.cfg.speechSynthesisSupport or true) pkgs.speechd-minimal
+        ++ lib.optional (options.settings.speechSynthesisSupport or true) pkgs.speechd-minimal
       )
       ++ lib.optional pipewireSupport pkgs.pipewire
       ++ lib.optional ffmpegSupport pkgs.ffmpeg_7
       ++ lib.optional gssSupport pkgs.libkrb5
       ++ lib.optional options.useGlvnd pkgs.libglvnd
-      ++ lib.optionals (options.cfg.enableQuakeLive or false) [
+      ++ lib.optionals (options.settings.enableQuakeLive or false) [
         stdenv.cc
         pkgs.libx11
         pkgs.libxxf86dga
@@ -166,7 +159,7 @@
 
       launcherName = "${options.applicationName}${lib.optionalString (!isDarwin) options.nameSuffix}";
 
-      usesNixExtensions = options.nixExtensions != null;
+      usesNixExtensions = options.nixExtensions != [];
 
       nameArray = map (a: a.name) (lib.optionals usesNixExtensions options.nixExtensions);
 
@@ -192,7 +185,7 @@
                 blocked_install_message = "You can't have manual extension mixed with nix extensions";
                 installation_mode = "blocked";
               };
-            } // lib.foldr (
+            } // builtins.foldl' (
               e: ret: ret // {
                 "${e.extid}" = {
                   installation_mode = "allowed";
@@ -201,7 +194,7 @@
             ) {} extensions;
 
             Extensions = {
-              Install = lib.foldr (e: ret: ret ++ ["${e.outPath}/${e.extid}.xpi"]) [] extensions;
+              Install = builtins.foldl' (e: ret: ret ++ ["${e.outPath}/${e.extid}.xpi"]) [] extensions;
             };
           }
           // lib.optionalAttrs smartcardSupport {
@@ -268,13 +261,13 @@
     in
       stdenv.mkDerivation (finalAttrs: {
         __structuredAttrs = true;
-        pname = options.pname;
+        pname = options.applicationName;
         version = options.version;
 
         inherit desktopItem;
 
         nativeBuildInputs = [
-          pkgs.makeWrapper
+          pkgs.makeBinaryWrapper
           pkgs.lndir
           pkgs.jq
         ];
@@ -302,7 +295,7 @@
           "--run" "mkdir -p \${MOZ_HOME:-~/.mozilla}/native-messaging-hosts"
         ]
         ++ lib.optionals (!options.hasMozSystemDirPatch) (
-          lib.concatMap (ext: [
+          builtins.concatMap (ext: [
             "--run" "ln -sfLt \${MOZ_HOME:-~/.mozilla}/native-messaging-hosts ${ext}/lib/mozilla/native-messaging-hosts/*"
           ]) allNativeMessagingHosts
         );
@@ -315,7 +308,9 @@
           sourceBinary = "${browser}/${executablePath}";
           libDir = if isDarwin then "${appPath}/Contents/Resources" else "lib/${options.libName}";
           prefsDir = if isDarwin then "${libDir}/browser/defaults/preferences" else "${libDir}/defaults/pref";
-        in ''
+        in
+        # bash
+        ''
           if [ ! -x "${sourceBinary}" ]; then
             echo "cannot find executable file \`${sourceBinary}'"
             exit 1

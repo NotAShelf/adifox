@@ -12,6 +12,10 @@ let
       pkgs = {
         type = adios.types.attrs;
       };
+      lib = {
+        type = adios.types.attrs;
+        defaultFunc = { options }: options.pkgs.lib;
+      };
     };
   };
 
@@ -31,7 +35,7 @@ let
 in
   # Test with various options
   tree.modules.wrapAdifox {
-    browser = pkgs.firefox-unwrapped;
+    package = pkgs.firefox-unwrapped;
     nameSuffix = "-custom";
     extraPrefs = ''
       pref("browser.startup.homepage", "https://example.com");

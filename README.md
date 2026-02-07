@@ -58,6 +58,10 @@ let
       pkgs = {
         type = adios.types.attrs;
       };
+      lib = {
+        type = adios.types.attrs;
+        defaultFunc = { options }: options.pkgs.lib;
+      };
     };
   };
 
@@ -74,7 +78,7 @@ let
   };
 in
   tree.modules.wrapAdifox {
-    browser = pkgs.firefox-unwrapped;
+    package = pkgs.firefox-unwrapped;
   }
 ```
 
@@ -100,7 +104,13 @@ like this:
           modules = {
             nixpkgs = adios: {
               name = "nixpkgs";
-              options.pkgs.type = adios.types.attrs;
+              options = {
+                pkgs.type = adios.types.attrs;
+                lib = {
+                  type = adios.types.attrs;
+                  defaultFunc = { options }: options.pkgs.lib;
+                };
+              };
             };
             wrapAdifox = import ./wrapAdifox.nix adios;
           };
@@ -109,7 +119,7 @@ like this:
         };
       in
         tree.modules.wrapAdifox {
-          browser = pkgs.firefox-unwrapped;
+          package = pkgs.firefox-unwrapped;
         };
   };
 }
@@ -125,7 +135,7 @@ Once you have the tree set up as shown above, you can customize the wrapper:
 
 ```nix
 tree.modules.wrapAdifox {
-  browser = pkgs.firefox-unwrapped;
+  package = pkgs.firefox-unwrapped;
   nameSuffix = "-custom";
   nativeMessagingHosts = [ pkgs.tridactyl-native ];
   cfg = {
@@ -147,7 +157,7 @@ tree.modules.wrapAdifox {
 
 ```nix
 tree.modules.wrapAdifox {
-  browser = pkgs.librewolf-unwrapped;
+  package = pkgs.librewolf-unwrapped;
   nixExtensions = [
     (pkgs.fetchFirefoxAddon {
       name = "ublock-origin";
@@ -178,8 +188,8 @@ nix-build tests/advanced.nix
 - All `defaultFunc` options have access to `{ options, inputs }` for dynamic
   defaults
 - Library paths computed from `inputs.nixpkgs.pkgs` for proper lib access
-- Browser feature flags extracted from `options.browser.*` attributes
-- External config support via `cfg` option for NixOS module system
+- Browser feature flags extracted from `options.package.*` attributes
+- External config support via `settings` option for NixOS module system
   compatibility. This might be removed or renamed at a later date depending on
   my needs and mood.
 - Complete bash `buildCommand` ported from `wrapFirefox` with all platform
