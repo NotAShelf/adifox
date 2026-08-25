@@ -1,31 +1,31 @@
 let
   # FIXME: pin this
-  adiosSource = builtins.fetchTarball "https://github.com/adisbladis/adios/archive/master.tar.gz";
-  adios = (import adiosSource).adios;
+  lladiosSource = builtins.fetchTarball "https://github.com/llakala/lladios/archive/main.tar.gz";
+  lladios = import lladiosSource;
 
   pkgs = import <nixpkgs> {};
 
   # Nixpkgs module
-  nixpkgsModule = adios: {
+  nixpkgsModule = lladios: {
     name = "nixpkgs";
     options = {
       pkgs = {
-        type = adios.types.attrs;
+        type = lladios.types.attrs;
       };
       lib = {
-        type = adios.types.attrs;
+        type = lladios.types.attrs;
         defaultFunc = { options }: options.pkgs.lib;
       };
     };
   };
 
-  # Create tree by calling adios with root module definition then options
+  # Create tree by calling lladios with root module definition then options
   tree =
-    adios {
+    lladios {
       name = "root";
       modules = {
-        nixpkgs = nixpkgsModule adios;
-        wrapAdifox = import ../wrapAdifox.nix adios;
+        nixpkgs = nixpkgsModule lladios;
+        wrapAdifox = import ../wrapAdifox.nix lladios;
       };
     } {
       options = {
