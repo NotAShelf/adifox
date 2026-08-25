@@ -1,11 +1,11 @@
 # Adifox
 
-[Adios]: https://github.com/adisbladis/adios
+[lladios]: https://github.com/llakala/lladios
 [Schizofox]: https://github.com/schizofox/schizofox
 
-This is an [Adios] based Firefox wrapper implementation, hopefully fully on-par
+This is an [lladios] based Firefox wrapper implementation, hopefully fully on-par
 with Nixpkgs' `wrapFirefox` designed to be used with my own project, [Schizofox]
-but made standalone to provide a complete, Adios-based Firefox wrapper for those
+but made standalone to provide a complete, lladios-based Firefox wrapper for those
 interested.
 
 ## Features
@@ -28,7 +28,7 @@ features I've fully confirmed working are:
 
 ### Platform Support
 
-As `wrapFirefox` and Adios are both cross-platform, so is Adifox. Both Linux and
+As `wrapFirefox` and lladios are both cross-platform, so is Adifox. Both Linux and
 Darwin are fully supported including codesigning fixes and `omni.ja` copying.
 
 ## Usage
@@ -41,35 +41,32 @@ this. Generally, npins is recommendable.
 
 ```nix
 { pkgs ? import <nixpkgs> { }
-, adios ? (builtins.fetchGit {
-    url = "https://github.com/adisbladis/adios";
+, lladios ? import (builtins.fetchGit {
+    url = "https://github.com/llakala/lladios";
     rev = "main"; # Pin to specific commit in production
-  }).adios { korora = (builtins.fetchGit {
-    url = "https://github.com/adisbladis/adios";
-    rev = "main";
-  }) + "/types/types.nix"; }
+  })
 }:
 
 let
   # Nixpkgs module for injecting pkgs
-  nixpkgsModule = adios: {
+  nixpkgsModule = lladios: {
     name = "nixpkgs";
     options = {
       pkgs = {
-        type = adios.types.attrs;
+        type = lladios.types.attrs;
       };
       lib = {
-        type = adios.types.attrs;
+        type = lladios.types.attrs;
         defaultFunc = { options }: options.pkgs.lib;
       };
     };
   };
 
-  tree = adios {
+  tree = lladios {
     name = "root";
     modules = {
-      nixpkgs = nixpkgsModule adios;
-      wrapAdifox = import ./wrapAdifox.nix adios;
+      nixpkgs = nixpkgsModule lladios;
+      wrapAdifox = import ./wrapAdifox.nix lladios;
     };
   } {
     options = {
@@ -91,28 +88,28 @@ like this:
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    adios.url = "github:adisbladis/adios";
+    lladios.url = "github:llakala/lladios";
   };
 
-  outputs = { nixpkgs, adios, ... }: {
+  outputs = { nixpkgs, lladios, ... }: {
     packages.x86_64-linux.default =
       let
         pkgs = nixpkgs.legacyPackages.x86_64-linux;
 
-        tree = adios.adios {
+        tree = lladios.adios {
           name = "root";
           modules = {
-            nixpkgs = adios: {
+            nixpkgs = lladios: {
               name = "nixpkgs";
               options = {
-                pkgs.type = adios.types.attrs;
+                pkgs.type = lladios.types.attrs;
                 lib = {
-                  type = adios.types.attrs;
+                  type = lladios.types.attrs;
                   defaultFunc = { options }: options.pkgs.lib;
                 };
               };
             };
-            wrapAdifox = import ./wrapAdifox.nix adios;
+            wrapAdifox = import ./wrapAdifox.nix lladios;
           };
         } {
           options."/nixpkgs".pkgs = pkgs;
@@ -176,7 +173,7 @@ Self-contained validation tests are provided in the `tests/` directory:
 - `tests/basic.nix` - Basic wrapper test
 - `tests/advanced.nix` - Advanced features test
 
-Tests automatically fetch adios from GitHub and require no local checkout:
+Tests automatically fetch lladios from GitHub and require no local checkout:
 
 ```bash
 nix-build tests/basic.nix
