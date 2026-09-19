@@ -1,6 +1,6 @@
 {types, ...}: {
   inputs = {
-    nixpkgs.path = "/nixpkgs";
+    nixpkgs.from = {root}: root.nixpkgs;
   };
 
   options = {
