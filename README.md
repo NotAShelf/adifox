@@ -40,14 +40,14 @@ encouraged to create your own fetching method instead of abusing `fetchGit` like
 this. Generally, npins is recommendable.
 
 ```nix
-{ pkgs ? import <nixpkgs> { }
-, lladios ? import (builtins.fetchGit {
-    url = "https://github.com/llakala/lladios";
-    rev = "main"; # Pin to specific commit in production
-  })
-}:
-
-let
+{
+  pkgs ? import <nixpkgs> {},
+  lladios ?
+    import (builtins.fetchGit {
+      url = "https://github.com/llakala/lladios";
+      rev = "main"; # Pin to specific commit in production
+    }),
+}: let
   # Nixpkgs module for injecting pkgs
   nixpkgsModule = lladios: {
     name = "nixpkgs";
@@ -57,22 +57,23 @@ let
       };
       lib = {
         type = lladios.types.attrs;
-        defaultFunc = { options }: options.pkgs.lib;
+        defaultFunc = {options}: options.pkgs.lib;
       };
     };
   };
 
-  tree = lladios {
-    name = "root";
-    modules = {
-      nixpkgs = nixpkgsModule lladios;
-      wrapAdifox = import ./wrapAdifox.nix lladios;
+  tree =
+    lladios {
+      name = "root";
+      modules = {
+        nixpkgs = nixpkgsModule lladios;
+        wrapAdifox = import ./wrapAdifox.nix lladios;
+      };
+    } {
+      options = {
+        "/nixpkgs" = {inherit pkgs;};
+      };
     };
-  } {
-    options = {
-      "/nixpkgs" = { inherit pkgs; };
-    };
-  };
 in
   tree.modules.wrapAdifox {
     package = pkgs.firefox-unwrapped;
